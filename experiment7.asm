@@ -17,47 +17,76 @@ table ends
 
 ; stack用于保存内外层循环的cx
 stack segment
-  db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  dw 8 dup(0)
 stack ends
 
 code segment
 ; ds和es分别指向data段和table段
+start:
     mov ax,data
     mov ds,ax
     mov ax,table
     mov es,ax
 
     mov bx,0 ;bx定位每个结构性数据
-    mov si,0 ;si首先指向0,表示年份
-    mov di,0 ;table中的数据
+    mov si,0 
 ; 外层循环21次,共21年
     mov cx,21
-s:  [bx].4 ;空格
-    [bx].9 ;空格
-    [bx].12 ; 空格
-    [bx].15 ;空格
-
-    mov cx,4 ;需要改成栈cx
-    mov si,0
-s0: mov al,es:[di]
-    mov [bx].0[si],al ;;年份 4
-    inc si
-    inc di
+;年份 4字节
+s0: mov ax,ds:0[bx]
+    mov es:0[si],ax
+    mov ax,ds:2[bx]
+    mov es:2[si],ax
+    add bx,4
+    add si,10h
     loop s0
 
-    mov cx,4
+;空格部分占一个字节 //TODO
+    mov cx,21
+s1: mov es::[bx].4 20h ;空格
+    mov es:[bx].9,20h;空格
+    mov es:[bx].12,20h ;空格
+    mov es:[bx].15,20h ;空格
+
+;收入占4字节
+    mov cx,21
+    mov bx,84;年份有21*4=84字节
+    mov si,5
+s2: mov ax,ds:0[bx]
+    mov es:0[si],ax
+    mov ax,ds:2[bx]
+    mov es:2[si],ax
+    add bx,4
+    inc si,10h
+    loop s2
+
+;雇员数占两字节
+s3: mov cx,21
+    mov bx,168;年份84+21*4=168
+    mov si,0ah;雇员从第10个字节开始
+    mov ax,ds:0[bx]
+    mov es:0[si],ax
+    add bx,2
+    add si,10h
+    loop s3
+
+;计算人均收入
+s4: mov cx,21
     mov si,0
-    mov di,0
-s1: mov al,es:[di+年份占据的空间]
-    mov bx.5[si],al;收入 4
-    inc si
-    inc di
-    loop s1
+;被除数32位，除数16位 被除数高位放在DX，低位放在AX
+;结果 商放在AX 余数放在DX
+    mov ax,es:5[si]
+    mov dx,es:7[si]
+    div word ptr es:0ah[si]
+    mov es:0dh[si],ax
+    add si,10h
+    loop s4
 
-s2: mov cx,4
+    mov ax,4c00h
+    int 32h
+code ends
 
-    mov al,es:[di+年份+收入]
-    mov bx.10.[si] ,al;雇员数量 2
+end start
 
-    [bx].13[si四] ;人均收入 2
+
 
