@@ -1,6 +1,6 @@
 assume cs:codesg ds:datasg
 datasg segment
-    'welcome to masm!'
+db    'welcome to masm!'
 datasg ends
 
 codesg segment
