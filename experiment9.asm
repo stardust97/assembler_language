@@ -9,7 +9,7 @@ db 8 dup(0)
 stack ends
 
 codesg segment
-start:  mov ax,0B8h
+start:  mov ax,b800h
         mov es,ax
         mov cx,3;3种颜色
 				mov si,0;颜色的索引
